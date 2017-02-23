@@ -15,6 +15,7 @@ import me.hii488.GeneticAlg;
 import me.hii488.NeuralNetwork.Child;
 import me.hii488.game.display.Window;
 import me.hii488.other.Data;
+import me.hii488.other.ExcelHandler;
 
 public class Controller implements KeyListener, Runnable{
 	
@@ -78,12 +79,20 @@ public class Controller implements KeyListener, Runnable{
 		amountToBP = 20;
 		bpGenLowerLimit = 100;
 		
+		gens = 1000;
+		
+		outputToExcel = true;
 		
 		sessions = new Session[genAlg.genSettings.childrenPerGeneration + genAlg.genSettings.additionalTopChildrenKept + amountToBP];
 		for(int i = 0; i < ((GeneticAlg) AI.learningAlg).children.size(); i++){
 			sessions[i] = Session.makeNewSession();
 		}
 		renderedSession = 0;
+		
+		if(outputToExcel){
+			ExcelHandler.setup("C:\\Users\\Hii\\Documents\\_Documents\\Programming\\2048ExcelTesting.xlsx");
+		}
+		
 	}
 	
 	public static void start(){
@@ -158,11 +167,11 @@ public class Controller implements KeyListener, Runnable{
 	public void keyTyped(KeyEvent arg0) {}
 
 	public static boolean outputToExcel = false;
-	public static String runData = "";
 	public static int gensBetweenBP;
 	public static int bpGenLowerLimit;
 	public static int amountToBP;
 	public static int gens;
+	public static int run;
 	
 	@Override
 	public void run() {
@@ -202,6 +211,10 @@ public class Controller implements KeyListener, Runnable{
 					}
 				}
 				
+				if(outputToExcel){
+					ExcelHandler.writeGeneration(genAlg.generation, genAlg.getGenerationInfoAsString(), run);
+				}
+				
 				AI.iterate();
 
 				for(Child c : additionalChildren){
@@ -222,6 +235,8 @@ public class Controller implements KeyListener, Runnable{
 				System.out.println("Trials: " + Session.trials);
 				System.out.println("Gens Between BP: " + gensBetweenBP);
 				System.out.println("BP start Gen: " + bpGenLowerLimit);
+				
+				ExcelHandler.writeGenInfo(run, AI.settings.settingsAsString(true, true, false) + "\n" + Session.trials + "\n" + gensBetweenBP + "\n" + bpGenLowerLimit);
 				
 				isRunning = false;
 			}
