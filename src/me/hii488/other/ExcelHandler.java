@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellType;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -39,18 +40,17 @@ public class ExcelHandler {
 				i++;
 				c = row.getCell(i);
 				if(c!=null){
-					System.out.println("value of " + i + ": " + c.getStringCellValue());
-				
-					if(c.getStringCellValue().equals("")){
-						found = true;
-					}
+					if(c.getCellTypeEnum() == CellType.STRING)
+						if(c.getStringCellValue().equals(""))
+							found = true;
 				}
 				else{
 					found = true;
 				}
 				
 			}while(!found);
-			Controller.run = i;
+			Controller.run = (int) Math.ceil(i/2)+1;
+		//	System.out.println(i + "::" +  Math.ceil(i/2) + "::" + ((int)Math.ceil(i/2)+1));
 		}
 		catch(Exception e){e.printStackTrace();}
 	}
@@ -62,8 +62,11 @@ public class ExcelHandler {
 	
 	public static void writeGenInfo(int run, String info){
 		String[] s = info.split("\n");
-		for(int i = 0; i < s.length; i++)
-			pwb.replaceCell(coordinate(ExcelColumnIndex.valueOf(GeneralHelper.toAlphabetic((run-1)*2+2)),i+1), info);
+		for(int i = 0; i < s.length; i++){
+	//		System.out.println(i+": " + s[i].split(":")[s[i].split(":").length-1]);
+			if(i!=0&&i!=6&&i!=7)pwb.replaceCell(coordinate(ExcelColumnIndex.valueOf(GeneralHelper.toAlphabetic((run-1)*2)),i+1),  Double.parseDouble(s[i].split(":")[s[i].split(":").length-1].trim()));
+			else pwb.replaceCell(coordinate(ExcelColumnIndex.valueOf(GeneralHelper.toAlphabetic((run-1)*2)),i+1),  s[i].split(":")[s[i].split(":").length-1].trim());
+		}
 		finalWrite();
 	}
 	

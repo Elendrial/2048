@@ -161,7 +161,7 @@ public class Session implements Runnable{
 	}
 	
 	public void stopAutoRun(){
-		isAutoRunning = true;
+		isAutoRunning = false;
 	}
 
 	public boolean isAutoRunning = false;

@@ -7,8 +7,6 @@ import java.awt.event.KeyListener;
 import java.util.ArrayList;
 import java.util.Random;
 
-import javax.swing.JOptionPane;
-
 import me.hii488.ArtificialIntelligence;
 import me.hii488.BackpropAlg;
 import me.hii488.GeneticAlg;
@@ -80,6 +78,7 @@ public class Controller implements KeyListener, Runnable{
 		bpGenLowerLimit = 100;
 		
 		gens = 1000;
+		runChangeRate = 5;
 		
 		outputToExcel = true;
 		
@@ -109,10 +108,6 @@ public class Controller implements KeyListener, Runnable{
 		isRunning = true;
 		win.start();
 		
-		for(int i = 0; i < Session.amountOfSessions; i++){
-			sessions[i].startAutoRun();
-		}
-		
 		new Thread(new Controller()).start();
 	}
 	
@@ -121,7 +116,7 @@ public class Controller implements KeyListener, Runnable{
 		if(Session.amountOfSessions > 2){
 			Color c = g.getColor();
 			g.setColor(Color.red);
-			g.drawString("Session #" + renderedSession + "    Generation #" + ((GeneticAlg) AI.learningAlg).generation, 5, 10);
+			g.drawString("Session #" + renderedSession + "    Generation #" + genAlg.generation + "    Run # " + run, 5, 10);
 			g.setColor(c);
 		}
 	}
@@ -172,81 +167,141 @@ public class Controller implements KeyListener, Runnable{
 	public static int amountToBP;
 	public static int gens;
 	public static int run;
+	public static int runChangeRate;
 	
 	@Override
 	public void run() {
 		ArrayList<Child> additionalChildren = new ArrayList<Child>();
+		boolean nextGen, runInProgress;
 		while (isRunning) {
-			boolean nextGen = true;
-			for (int i = 0; i < Session.amountOfSessions && nextGen; i++) {
-				if (sessions[i].isAutoRunning)
-					nextGen = false;
+			runInProgress = true;
+			
+			for(int i = 0; i < Session.amountOfSessions; i++){
+				sessions[i].startAutoRun();
 			}
-
-			if (nextGen && genAlg.generation != gens) {
-				additionalChildren = new ArrayList<Child>();
-				if((genAlg.generation - bpGenLowerLimit) % gensBetweenBP == 0 && genAlg.generation >= bpGenLowerLimit){
-					System.out.print("BP Run...");
-					genAlg.sortedChildren = genAlg.fitnessSortedChildren(genAlg.children);
-					int highestIndex = 0;
-					float[] outputs;
-					boolean containsHighest;
-					for(int i = 0; i < amountToBP; i++){
-						bpAgent.c = genAlg.sortedChildren.get(i).clone();
-						
-						for(int j = 0; j < bpData.length; j++){
-							outputs = bpAgent.getOutputs(bpData[j].input, null);
-							highestIndex = 0;
-							containsHighest = false;
+			
+			while(runInProgress){
+				nextGen = true;
+				for (int i = 0; i < Session.amountOfSessions && nextGen; i++) {
+					if (sessions[i].isAutoRunning)
+						nextGen = false;
+				}
+	
+				if (nextGen && genAlg.generation < gens) {
+					additionalChildren = new ArrayList<Child>();
+					if((genAlg.generation - bpGenLowerLimit) % gensBetweenBP == 0 && genAlg.generation >= bpGenLowerLimit){
+						System.out.print("BP Run...");
+						genAlg.sortedChildren = genAlg.fitnessSortedChildren(genAlg.children);
+						int highestIndex = 0;
+						float[] outputs;
+						boolean containsHighest;
+						for(int i = 0; i < amountToBP; i++){
+							bpAgent.c = genAlg.sortedChildren.get(i).clone();
 							
-							for(int k = 1 ; k < outputs.length; k++) if(outputs[k] > outputs[highestIndex]) highestIndex = k;
-							for(int k = 0; k < bpData[j].expectedOutputs.length; k++) if(bpData[j].expectedOutputs[k] == highestIndex) containsHighest = true;
-							
-							if(!containsHighest){
-								bpAgent.updateNodes(bpData[j].trainingOutputs);
+							for(int j = 0; j < bpData.length; j++){
+								outputs = bpAgent.getOutputs(bpData[j].input, null);
+								highestIndex = 0;
+								containsHighest = false;
+								
+								for(int k = 1 ; k < outputs.length; k++) if(outputs[k] > outputs[highestIndex]) highestIndex = k;
+								for(int k = 0; k < bpData[j].expectedOutputs.length; k++) if(bpData[j].expectedOutputs[k] == highestIndex) containsHighest = true;
+								
+								if(!containsHighest){
+									bpAgent.updateNodes(bpData[j].trainingOutputs);
+								}
 							}
+	
+							additionalChildren.add(bpAgent.c.clone());
 						}
-
-						additionalChildren.add(bpAgent.c.clone());
 					}
-				}
-				
-				if(outputToExcel){
-					ExcelHandler.writeGeneration(genAlg.generation, genAlg.getGenerationInfoAsString(), run);
-				}
-				
-				AI.iterate();
+					
+					if(outputToExcel){
+						ExcelHandler.writeGeneration(genAlg.generation, genAlg.getGenerationInfoAsString(), run);
+					}
+					
+					AI.iterate();
+	
+					for(Child c : additionalChildren){
+						genAlg.children.add(c);
+					}
+					
+					while (Session.amountOfSessions < genAlg.children.size()) {
+						sessions[Session.amountOfSessions] = Session.makeNewSession();
+					}
+	
+					for (int j = 0; j < genAlg.children.size(); j++) {
+						sessions[j].startAutoRun();
+					}
 
-				for(Child c : additionalChildren){
-					genAlg.children.add(c);
+					
+				} else if (genAlg.generation == gens) {
+					AI.settings.printSettings(true, true, false);
+					System.out.println("Trials: " + Session.trials);
+					System.out.println("Gens Between BP: " + gensBetweenBP);
+					System.out.println("BP start Gen: " + bpGenLowerLimit + "\n\n-----------\n");
+					
+					ExcelHandler.writeGenInfo(run, AI.settings.settingsAsString(true, true, false) + "\n:" + Session.trials + "\n:" + gensBetweenBP + "\n:" + bpGenLowerLimit);
+					
+					runInProgress = false;
 				}
-				
-				while (Session.amountOfSessions < genAlg.children.size()) {
-					sessions[Session.amountOfSessions] = Session.makeNewSession();
+	
+				try {
+					Thread.sleep(100);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
 				}
-
-				for (int j = 0; j < genAlg.children.size(); j++) {
-					sessions[j].startAutoRun();
-				}
-				
-			} else if (genAlg.generation == gens) {
-				JOptionPane.showConfirmDialog(null, "Run Finished");
-				AI.settings.printSettings(true, true, false);
-				System.out.println("Trials: " + Session.trials);
-				System.out.println("Gens Between BP: " + gensBetweenBP);
-				System.out.println("BP start Gen: " + bpGenLowerLimit);
-				
-				ExcelHandler.writeGenInfo(run, AI.settings.settingsAsString(true, true, false) + "\n" + Session.trials + "\n" + gensBetweenBP + "\n" + bpGenLowerLimit);
-				
-				isRunning = false;
 			}
-
-			try {
-				Thread.sleep(100);
-			} catch (InterruptedException e) {
-				e.printStackTrace();
+			
+			
+			run++;
+			
+			if(run%runChangeRate == 0) updateVariables();
+			
+			sessions = new Session[genAlg.genSettings.childrenPerGeneration + genAlg.genSettings.additionalTopChildrenKept + amountToBP];
+			Session.amountOfSessions = 0;
+			for(int i = 0; i < genAlg.genSettings.childrenPerGeneration; i++){
+				sessions[i] = Session.makeNewSession();
 			}
+			
+			genAlg.makeRandomGeneration();
+			bpAgent.setup();
 
+			bpAgent.settings = genAlg.settings;
+			bpAgent.neuralNet = genAlg.neuralNet;
+			
+			
+		}
+	}
+	
+	public static void updateVariables(){
+		switch(rand.nextInt(9)){
+		case 0:
+			genAlg.genSettings.childrenPerGeneration += (Math.ceil(genAlg.genSettings.childrenPerGeneration / 20) * (rand.nextBoolean() && genAlg.genSettings.childrenPerGeneration > 50 ? -1 : 1));
+			break;
+		case 1:
+			genAlg.genSettings.additionalTopChildrenKept += (Math.ceil(genAlg.genSettings.additionalTopChildrenKept / 20) * (rand.nextBoolean() && genAlg.genSettings.additionalTopChildrenKept > 0 ? -1 : 1));
+			break;
+		case 2:
+			genAlg.genSettings.mutationChance += (genAlg.genSettings.mutationChance / 20 * (rand.nextBoolean() && genAlg.genSettings.mutationChance > 0.0000001 ? -1 : 1));
+			break;
+		case 3:
+			genAlg.genSettings.mixTop += (Math.ceil(genAlg.genSettings.mixTop / 20) * (rand.nextBoolean() && genAlg.genSettings.mixTop > 0 ? -1 : 1));
+			break;
+		case 5:
+			AI.settings.neuralSettings.cutoffThreshhold += (AI.settings.neuralSettings.cutoffThreshhold / 20 * (rand.nextBoolean() && AI.settings.neuralSettings.cutoffThreshhold > 0.01 ? -1 : 1));
+			break;
+		case 6:
+			bpAgent.learningRate += (bpAgent.learningRate / 20 * (rand.nextBoolean() && bpAgent.learningRate > 0 ? -1 : 1));
+			break;
+		case 7:
+			gensBetweenBP += (1 * (rand.nextBoolean() && gensBetweenBP > 1 ? -1 : 1));
+			break;
+		case 8:
+			amountToBP += (Math.ceil(amountToBP / 20) * (rand.nextBoolean() && amountToBP > 1? -1 : 1));
+			break;
+		case 4:
+			bpGenLowerLimit += (Math.ceil(bpGenLowerLimit / 20) * (rand.nextBoolean() && bpGenLowerLimit > 1? -1 : 1));
+			break;
 		}
 	}
 	
