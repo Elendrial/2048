@@ -9,7 +9,7 @@ import java.util.Random;
 
 import me.hii488.ArtificialIntelligence;
 import me.hii488.BackpropAlg;
-import me.hii488.GeneticAlg;
+import me.hii488.GeneticAlgB;
 import me.hii488.NeuralNetwork.Child;
 import me.hii488.game.display.Window;
 import me.hii488.other.Data;
@@ -28,7 +28,7 @@ public class Controller implements KeyListener, Runnable{
 	public static Random rand = new Random();
 	public static ArtificialIntelligence AI;
 	public static BackpropAlg bpAgent;
-	public static GeneticAlg genAlg = new GeneticAlg();
+	public static GeneticAlgB genAlg = new GeneticAlgB();
 	
 	public static void setup(){
 		win = new Window("2048", 600, 600);
@@ -50,6 +50,10 @@ public class Controller implements KeyListener, Runnable{
 		genAlg.genSettings.mutationChance = 0.02f;
 		genAlg.genSettings.mixTop = 30;
 		genAlg.genSettings.insureDifferent = true;
+		
+		genAlg.genSettingsB.additionalRandKept = 20;
+		genAlg.genSettingsB.lowestXPotentiallyKept = 80;
+		genAlg.genSettingsB.additionalToMix = 20;
 		
 		AI.settings.neuralSettings.inputs = 17; // needs to be the grid area +1
 		AI.settings.neuralSettings.nodesInHiddenLayers = new int[]{32, 8};
@@ -82,8 +86,8 @@ public class Controller implements KeyListener, Runnable{
 		
 		outputToExcel = true;
 		
-		sessions = new Session[genAlg.genSettings.childrenPerGeneration + genAlg.genSettings.additionalTopChildrenKept + amountToBP];
-		for(int i = 0; i < ((GeneticAlg) AI.learningAlg).children.size(); i++){
+		sessions = new Session[genAlg.genSettings.childrenPerGeneration + genAlg.genSettings.additionalTopChildrenKept + amountToBP + genAlg.genSettingsB.additionalRandKept];
+		for(int i = 0; i < genAlg.children.size(); i++){
 			sessions[i] = Session.makeNewSession();
 		}
 		renderedSession = 0;
@@ -112,13 +116,16 @@ public class Controller implements KeyListener, Runnable{
 	}
 	
 	public static void render(Graphics g) {
-		sessions[renderedSession].render(g);
-		if(Session.amountOfSessions > 2){
-			Color c = g.getColor();
-			g.setColor(Color.red);
-			g.drawString("Session #" + renderedSession + "    Generation #" + genAlg.generation + "    Run # " + run, 5, 10);
-			g.setColor(c);
+		try{
+			sessions[renderedSession].render(g);
+			if(Session.amountOfSessions > 2){
+				Color c = g.getColor();
+				g.setColor(Color.red);
+				g.drawString("Session #" + renderedSession + "    Generation #" + genAlg.generation + "    Run # " + run, 5, 10);
+				g.setColor(c);
+			}
 		}
+		catch(Exception e){e.printStackTrace();}
 	}
 
 	
@@ -252,12 +259,17 @@ public class Controller implements KeyListener, Runnable{
 				}
 			}
 			
+			try {
+				Thread.sleep(100);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
 			
 			run++;
 			
 			if(run%runChangeRate == 0) updateVariables();
 			
-			sessions = new Session[genAlg.genSettings.childrenPerGeneration + genAlg.genSettings.additionalTopChildrenKept + amountToBP];
+			sessions = new Session[genAlg.genSettings.childrenPerGeneration + genAlg.genSettings.additionalTopChildrenKept + amountToBP + genAlg.genSettingsB.additionalRandKept];
 			Session.amountOfSessions = 0;
 			for(int i = 0; i < genAlg.genSettings.childrenPerGeneration; i++){
 				sessions[i] = Session.makeNewSession();
@@ -265,7 +277,7 @@ public class Controller implements KeyListener, Runnable{
 			
 			genAlg.makeRandomGeneration();
 			bpAgent.setup();
-
+			
 			bpAgent.settings = genAlg.settings;
 			bpAgent.neuralNet = genAlg.neuralNet;
 			

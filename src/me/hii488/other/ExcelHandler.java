@@ -64,7 +64,7 @@ public class ExcelHandler {
 		String[] s = info.split("\n");
 		for(int i = 0; i < s.length; i++){
 	//		System.out.println(i+": " + s[i].split(":")[s[i].split(":").length-1]);
-			if(i!=0&&i!=6&&i!=7)pwb.replaceCell(coordinate(ExcelColumnIndex.valueOf(GeneralHelper.toAlphabetic((run-1)*2)),i+1),  Double.parseDouble(s[i].split(":")[s[i].split(":").length-1].trim()));
+			if(i!=0&&i!=11&&i!=7)pwb.replaceCell(coordinate(ExcelColumnIndex.valueOf(GeneralHelper.toAlphabetic((run-1)*2)),i+1),  Double.parseDouble(s[i].split(":")[s[i].split(":").length-1].trim()));
 			else pwb.replaceCell(coordinate(ExcelColumnIndex.valueOf(GeneralHelper.toAlphabetic((run-1)*2)),i+1),  s[i].split(":")[s[i].split(":").length-1].trim());
 		}
 		finalWrite();
