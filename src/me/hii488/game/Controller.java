@@ -285,36 +285,48 @@ public class Controller implements KeyListener, Runnable{
 		}
 	}
 	
+	public static float percentChange = 0.05f;
+	
 	public static void updateVariables(){
-		switch(rand.nextInt(9)){
+		switch(rand.nextInt(12)){
 		case 0:
-			genAlg.genSettings.childrenPerGeneration += (Math.ceil(genAlg.genSettings.childrenPerGeneration / 20) * (rand.nextBoolean() && genAlg.genSettings.childrenPerGeneration > 50 ? -1 : 1));
+			genAlg.genSettings.childrenPerGeneration += (Math.ceil(genAlg.genSettings.childrenPerGeneration * percentChange) * (rand.nextBoolean() && genAlg.genSettings.childrenPerGeneration > 50 ? -1 : 1));
 			break;
 		case 1:
-			genAlg.genSettings.additionalTopChildrenKept += (Math.ceil(genAlg.genSettings.additionalTopChildrenKept / 20) * (rand.nextBoolean() && genAlg.genSettings.additionalTopChildrenKept > 0 ? -1 : 1));
+			genAlg.genSettings.additionalTopChildrenKept += (Math.ceil(genAlg.genSettings.additionalTopChildrenKept * percentChange) * (rand.nextBoolean() && genAlg.genSettings.additionalTopChildrenKept > 0 ? -1 : 1));
 			break;
 		case 2:
-			genAlg.genSettings.mutationChance += (genAlg.genSettings.mutationChance / 20 * (rand.nextBoolean() && genAlg.genSettings.mutationChance > 0.0000001 ? -1 : 1));
+			genAlg.genSettings.mutationChance += (genAlg.genSettings.mutationChance * percentChange * (rand.nextBoolean() && genAlg.genSettings.mutationChance > 0.0000001 ? -1 : 1));
 			break;
 		case 3:
-			genAlg.genSettings.mixTop += (Math.ceil(genAlg.genSettings.mixTop / 20) * (rand.nextBoolean() && genAlg.genSettings.mixTop > 0 ? -1 : 1));
+			genAlg.genSettings.mixTop += (Math.ceil(genAlg.genSettings.mixTop * percentChange) * (rand.nextBoolean() && genAlg.genSettings.mixTop > 0 ? -1 : 1));
+			break;
+		case 4:
+			bpGenLowerLimit += (Math.ceil(bpGenLowerLimit * percentChange) * (rand.nextBoolean() && bpGenLowerLimit > 1? -1 : 1));
 			break;
 		case 5:
-			AI.settings.neuralSettings.cutoffThreshhold += (AI.settings.neuralSettings.cutoffThreshhold / 20 * (rand.nextBoolean() && AI.settings.neuralSettings.cutoffThreshhold > 0.01 ? -1 : 1));
+			AI.settings.neuralSettings.cutoffThreshhold += (AI.settings.neuralSettings.cutoffThreshhold * percentChange * (rand.nextBoolean() && AI.settings.neuralSettings.cutoffThreshhold > 0.01 ? -1 : 1));
 			break;
 		case 6:
-			bpAgent.learningRate += (bpAgent.learningRate / 20 * (rand.nextBoolean() && bpAgent.learningRate > 0 ? -1 : 1));
+			bpAgent.learningRate += (bpAgent.learningRate * percentChange * (rand.nextBoolean() && bpAgent.learningRate > 0 ? -1 : 1));
 			break;
 		case 7:
 			gensBetweenBP += (1 * (rand.nextBoolean() && gensBetweenBP > 1 ? -1 : 1));
 			break;
 		case 8:
-			amountToBP += (Math.ceil(amountToBP / 20) * (rand.nextBoolean() && amountToBP > 1? -1 : 1));
+			amountToBP += (Math.ceil(amountToBP * percentChange) * (rand.nextBoolean() && amountToBP > 1? -1 : 1));
 			break;
-		case 4:
-			bpGenLowerLimit += (Math.ceil(bpGenLowerLimit / 20) * (rand.nextBoolean() && bpGenLowerLimit > 1? -1 : 1));
+		case 9:
+			genAlg.genSettingsB.additionalRandKept += (Math.ceil(genAlg.genSettingsB.additionalRandKept * percentChange) * (rand.nextBoolean() && genAlg.genSettingsB.additionalRandKept > 0 ? -1 : 1));
+			break;
+		case 10:
+			genAlg.genSettingsB.lowestXPotentiallyKept += (Math.ceil(genAlg.genSettingsB.lowestXPotentiallyKept * percentChange) * (rand.nextBoolean() && genAlg.genSettingsB.lowestXPotentiallyKept > genAlg.genSettingsB.additionalRandKept ? -1 : 1));
+			break;
+		case 11:
+			genAlg.genSettingsB.additionalToMix += (Math.ceil(genAlg.genSettingsB.additionalToMix * percentChange) * (rand.nextBoolean() && genAlg.genSettingsB.additionalToMix > 0 ? -1 : 1));
 			break;
 		}
+		
 	}
 	
 	public static Data[] bpData = { // 0 : R, 		1 : L, 		2 : U, 		3 : D
