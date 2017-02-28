@@ -36,7 +36,7 @@ public class ExcelHandler {
 			int i = 0;
 			boolean found = false;
 			Cell c;
-			do{
+			while(!found){
 				i++;
 				c = row.getCell(i);
 				if(c!=null){
@@ -48,7 +48,7 @@ public class ExcelHandler {
 					found = true;
 				}
 				
-			}while(!found);
+			}
 			Controller.run = (int) Math.ceil(i/2)+1;
 		//	System.out.println(i + "::" +  Math.ceil(i/2) + "::" + ((int)Math.ceil(i/2)+1));
 		}

@@ -14,6 +14,7 @@ import me.hii488.NeuralNetwork.Child;
 import me.hii488.game.display.Window;
 import me.hii488.other.Data;
 import me.hii488.other.ExcelHandler;
+import me.leliel.stopwatch.Stopwatch;
 
 public class Controller implements KeyListener, Runnable{
 	
@@ -26,9 +27,12 @@ public class Controller implements KeyListener, Runnable{
 	public static long timeBetweenAITurns = 0;
 	
 	public static Random rand = new Random();
+	
 	public static ArtificialIntelligence AI;
 	public static BackpropAlg bpAgent;
 	public static GeneticAlgB genAlg = new GeneticAlgB();
+	
+	public static Stopwatch s = new Stopwatch();
 	
 	public static void setup(){
 		win = new Window("2048", 600, 600);
