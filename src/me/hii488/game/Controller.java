@@ -32,13 +32,14 @@ public class Controller implements KeyListener, Runnable{
 	public static BackpropAlg bpAgent;
 	public static GeneticAlgB genAlg = new GeneticAlgB();
 	
-	public static Stopwatch s = new Stopwatch();
+	public static Stopwatch stopwatch = new Stopwatch();
 	
 	public static void setup(){
 		win = new Window("2048", 600, 600);
 		
 		sessions = new Session[1];
 		sessions[0] = Session.makeNewSession();
+		sessions[0].spawnRand();
 		renderedSession = 0;
 	}
 	
@@ -186,9 +187,10 @@ public class Controller implements KeyListener, Runnable{
 		boolean nextGen, runInProgress;
 		while (isRunning) {
 			runInProgress = true;
-			
+			stopwatch.start();
 			for(int i = 0; i < Session.amountOfSessions; i++){
 				sessions[i].startAutoRun();
+				sessions[i].spawnRand();
 			}
 			
 			while(runInProgress){
@@ -246,12 +248,14 @@ public class Controller implements KeyListener, Runnable{
 
 					
 				} else if (genAlg.generation == gens) {
+					stopwatch.stop();
 					AI.settings.printSettings(true, true, false);
 					System.out.println("Trials: " + Session.trials);
 					System.out.println("Gens Between BP: " + gensBetweenBP);
-					System.out.println("BP start Gen: " + bpGenLowerLimit + "\n\n-----------\n");
-					
-					ExcelHandler.writeGenInfo(run, AI.settings.settingsAsString(true, true, false) + "\n:" + Session.trials + "\n:" + gensBetweenBP + "\n:" + bpGenLowerLimit);
+					System.out.println("BP start Gen: " + bpGenLowerLimit);
+					System.out.println("Time taken for run: " + stopwatch.totalTime);
+
+					ExcelHandler.writeGenInfo(run, AI.settings.settingsAsString(true, true, false) + "\n:" + Session.trials + "\n:" + gensBetweenBP + "\n:" + bpGenLowerLimit + "\n:"+ stopwatch.totalTime);
 					
 					runInProgress = false;
 				}
@@ -284,8 +288,6 @@ public class Controller implements KeyListener, Runnable{
 			
 			bpAgent.settings = genAlg.settings;
 			bpAgent.neuralNet = genAlg.neuralNet;
-			
-			
 		}
 	}
 	
