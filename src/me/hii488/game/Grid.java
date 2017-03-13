@@ -70,7 +70,8 @@ public class Grid {
 		catch(Exception e){e.printStackTrace(); return -1;}
 	}
 
-	public static Font f = new Font("Calibri", Font.PLAIN, 24);
+	
+	public static Font f = new Font("Calibri", Font.PLAIN, 32);
 	public void render(Graphics g) {
 		Color c = g.getColor();
 		g.setColor(Color.DARK_GRAY);
@@ -87,6 +88,7 @@ public class Grid {
 		Font f2 = g.getFont();
 		g.setFont(f);
 		
+		//TODO: Make the colours nicer / easier to read
 		for(int i = 0; i < grid.length; i++){
 			for(int j = 0; j < grid[0].length; j++){
 				g.setColor(new Color((Math.log(getCell(j,i)) * 30 < 255 ? (int) Math.log(getCell(j,i)) * 30 : 255), Math.log(getCell(j,i)) * 10 < 255 ? 255 - (int) Math.log(getCell(j,i)) * 10 : 0, 0));

@@ -35,64 +35,14 @@ public class Session implements Runnable{
 	public int sessionNumber;
 	public Grid grid;
 	
-	public void moveRight(){
-		for(int a = 0; a < grid.getDimensions().x-1; a++){
-			for(int i = 0; i < grid.getDimensions().y; i++){
-				for(int j = grid.getDimensions().x-2; j >= 0; j--){
-					if(grid.getCell(j+1,i) == 0){
-						grid.setCell(grid.getCell(j, i), j+1,i);
-						grid.setCell(0, j, i);
-					}
-					if(grid.getCell(j+1,i) == grid.getCell(j,i)){
-						grid.setCell(grid.getCell(j, i) * 2, j+1,i);
-						grid.setCell(0, j, i);
-					}
-				}
-			}
-		}
-		spawnRand();
-		updateScore();
-	}
-	
-	public void moveLeft(){
-		for(int a = 0; a < grid.getDimensions().x-1; a++){
-			for(int i = 0; i < grid.getDimensions().y; i++){
-				for(int j = 1; j < grid.getDimensions().x; j++){
-					if(grid.getCell(j-1,i) == 0){
-						grid.setCell(grid.getCell(j, i), j-1,i);
-						grid.setCell(0, j, i);
-					}
-					if(grid.getCell(j-1,i) == grid.getCell(j,i)){
-						grid.setCell(grid.getCell(j, i) * 2, j-1,i);
-						grid.setCell(0, j, i);
-					}
-				}
-			}
-		}
-		spawnRand();
-		updateScore();
-	}
-	
-	public void moveDown(){
-		for(int a = 0; a < grid.getDimensions().y-1; a++){
-			for(int i = grid.getDimensions().y-2; i >= 0; i--){
-				for(int j = 0; j < grid.getDimensions().x; j++){
-					if(grid.getCell(j,i+1) == 0){
-						grid.setCell(grid.getCell(j, i), j, i+1);
-						grid.setCell(0, j, i);
-					}
-					if(grid.getCell(j,i+1) == grid.getCell(j,i)){
-						grid.setCell(grid.getCell(j, i) * 2, j ,i+1);
-						grid.setCell(0, j, i);
-					}
-				}
-			}
-		}
-		spawnRand();
-		updateScore();
-	}
-	
 	public void moveUp(){
+		slideUp();
+		combineUp();
+		slideUp();
+		spawnRand();
+	}
+	
+	public void slideUp(){
 		for(int a = 0; a < grid.getDimensions().y-1; a++){
 			for(int i = 1; i < grid.getDimensions().y; i++){
 				for(int j = 0; j < grid.getDimensions().x; j++){
@@ -100,15 +50,123 @@ public class Session implements Runnable{
 						grid.setCell(grid.getCell(j, i), j, i-1);
 						grid.setCell(0, j, i);
 					}
-					if(grid.getCell(j,i-1) == grid.getCell(j,i)){
-						grid.setCell(grid.getCell(j, i) * 2, j ,i-1);
+				}
+			}
+		}
+	}
+	
+	public void combineUp(){
+		for(int i = 1; i < grid.getDimensions().y; i++){
+			for(int j = 0; j < grid.getDimensions().x; j++){
+				if(grid.getCell(j,i-1) == grid.getCell(j,i)){
+					grid.setCell(grid.getCell(j, i) * 2, j ,i-1);
+					grid.setCell(0, j, i);
+					score += grid.getCell(j, i-1);
+				}
+			}
+		}
+	}
+	
+	
+	
+	public void moveDown(){
+		slideDown();
+		combineDown();
+		slideDown();
+		spawnRand();
+	}
+	
+	public void slideDown(){
+		for(int a = 0; a < grid.getDimensions().y-1; a++){
+			for(int i = grid.getDimensions().y-2; i >= 0; i--){
+				for(int j = 0; j < grid.getDimensions().x; j++){
+					if(grid.getCell(j,i+1) == 0){
+						grid.setCell(grid.getCell(j, i), j, i+1);
 						grid.setCell(0, j, i);
 					}
 				}
 			}
 		}
+	}
+	
+	public void combineDown(){
+		for(int i = grid.getDimensions().y-2; i >= 0; i--){
+			for(int j = 0; j < grid.getDimensions().x; j++){
+				if(grid.getCell(j,i+1) == grid.getCell(j,i)){
+					grid.setCell(grid.getCell(j, i) * 2, j ,i+1);
+					grid.setCell(0, j, i);
+					score += grid.getCell(j, i+1);
+				}
+			}
+		}
+	}
+	
+	
+	
+	public void moveRight(){
+		slideRight();
+		combineRight();
+		slideRight();
 		spawnRand();
-		updateScore();
+	}
+	
+	public void slideRight(){
+		for(int a = 0; a < grid.getDimensions().x-1; a++){
+			for(int i = 0; i < grid.getDimensions().y; i++){
+				for(int j = grid.getDimensions().x-2; j >= 0; j--){
+					if(grid.getCell(j+1,i) == 0){
+						grid.setCell(grid.getCell(j, i), j+1,i);
+						grid.setCell(0, j, i);
+					}
+				}
+			}
+		}
+	}
+	
+	public void combineRight(){
+		for(int i = 0; i < grid.getDimensions().y; i++){
+			for(int j = grid.getDimensions().x-2; j >= 0; j--){
+				if(grid.getCell(j+1,i) == grid.getCell(j,i)){
+					grid.setCell(grid.getCell(j, i) * 2, j+1,i);
+					grid.setCell(0, j, i);
+					score += grid.getCell(j+1, i);
+				}
+			}
+		}
+	}
+	
+	
+	
+	public void moveLeft(){
+		slideLeft();
+		combineLeft();
+		slideLeft();
+		spawnRand();
+	}
+	
+	public void slideLeft(){
+		for(int a = 0; a < grid.getDimensions().x-1; a++){
+			for(int i = 0; i < grid.getDimensions().y; i++){
+				for(int j = 1; j < grid.getDimensions().x; j++){
+					if(grid.getCell(j-1,i) == 0){
+						grid.setCell(grid.getCell(j, i), j-1,i);
+						grid.setCell(0, j, i);
+					}
+				}
+			}
+		}
+	}
+	
+	public void combineLeft(){
+		for(int i = 0; i < grid.getDimensions().y; i++){
+			for(int j = 1; j < grid.getDimensions().x; j++){
+				if(grid.getCell(j-1,i) == grid.getCell(j,i)){
+					grid.setCell(grid.getCell(j, i) * 2, j-1,i);
+					grid.setCell(0, j, i);
+					score += grid.getCell(j-1, i);
+				}
+			}
+		}
 	}
 	
 	
@@ -128,22 +186,7 @@ public class Session implements Runnable{
 			}
 		}
 	}
-	
-	public void updateScore(){
-		int total = 0, highest = 0, value = 0;
-		
-		for(int i = 0; i < grid.getDimensions().x; i++){
-			for(int j = 0; j < grid.getDimensions().y; j++){
-				value = grid.getCell(i, j);
-				total += value;
-				if(value > highest) highest = value;
-			}
-		}
-		
-		total += highest;
-		
-		score = total;
-	}
+
 	
 	public void render(Graphics g){
 		grid.render(g);
